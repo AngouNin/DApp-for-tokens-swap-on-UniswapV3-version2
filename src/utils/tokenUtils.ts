@@ -7,6 +7,7 @@ import { ERC20_ABI } from './abis';
  * @returns A Promise that resolves to a Token object
  */
 
+const project_id = import.meta.env.VITE_INFURA_PROJECT_ID;
 
 export const fetchTokenInfo = async (tokenAddress: string): Promise<Token> => {
   try {
@@ -14,7 +15,7 @@ export const fetchTokenInfo = async (tokenAddress: string): Promise<Token> => {
       throw new Error('Invalid token address format');
     }
 
-    const provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/VITE_INFURA_PROJECT_ID");
+    const provider = new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${project_id}`);
     
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
     
