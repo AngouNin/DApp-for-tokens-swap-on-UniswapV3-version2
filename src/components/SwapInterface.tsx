@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { ArrowDown, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowDown, RefreshCw, AlertCircle, Search } from 'lucide-react';
 import { getTokenQuote, executeSwap } from '../utils/swapUtils';
+import { fetchTokenInfo } from '../utils/tokenUtils';
 import { Token } from '../types/tokens';
 import { COMMON_TOKENS } from '../constants/tokens';
 
@@ -16,6 +17,9 @@ const SwapInterface = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [swapStatus, setSwapStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [customTokens, setCustomTokens] = useState<Token[]>([]);
+  const [isLoadingFromToken, setIsLoadingFromToken] = useState<boolean>(false);
+  const [isLoadingToToken, setIsLoadingToToken] = useState<boolean>(false);
 
   // Reset error when inputs change
   useEffect(() => {
@@ -87,33 +91,47 @@ const SwapInterface = () => {
     setToToken(token);
   };
 
-  const handleAddCustomFromToken = () => {
+  const handleAddCustomFromToken = async () => {
     if (customFromAddress && customFromAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-      const customToken: Token = {
-        address: customFromAddress,
-        symbol: 'CUSTOM',
-        name: 'Custom Token',
-        decimals: 18,
-        logoURI: 'https://raw.githubusercontent.com/uniswap/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
-      };
-      setFromToken(customToken);
-      setCustomFromAddress('');
+      setIsLoadingFromToken(true);
+      try {
+        const tokenInfo = await fetchTokenInfo(customFromAddress);
+        
+        // Add to custom tokens list if not already there
+        if (!customTokens.some(token => token.address.toLowerCase() === customFromAddress.toLowerCase())) {
+          setCustomTokens(prev => [...prev, tokenInfo]);
+        }
+        
+        setFromToken(tokenInfo);
+        setCustomFromAddress('');
+      } catch (err) {
+        setError('Error fetching token information');
+      } finally {
+        setIsLoadingFromToken(false);
+      }
     } else {
       setError('Please enter a valid token address');
     }
   };
 
-  const handleAddCustomToToken = () => {
+  const handleAddCustomToToken = async () => {
     if (customToAddress && customToAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-      const customToken: Token = {
-        address: customToAddress,
-        symbol: 'CUSTOM',
-        name: 'Custom Token',
-        decimals: 18,
-        logoURI: 'https://raw.githubusercontent.com/uniswap/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
-      };
-      setToToken(customToken);
-      setCustomToAddress('');
+      setIsLoadingToToken(true);
+      try {
+        const tokenInfo = await fetchTokenInfo(customToAddress);
+        
+        // Add to custom tokens list if not already there
+        if (!customTokens.some(token => token.address.toLowerCase() === customToAddress.toLowerCase())) {
+          setCustomTokens(prev => [...prev, tokenInfo]);
+        }
+        
+        setToToken(tokenInfo);
+        setCustomToAddress('');
+      } catch (err) {
+        setError('Error fetching token information');
+      } finally {
+        setIsLoadingToToken(false);
+      }
     } else {
       setError('Please enter a valid token address');
     }
@@ -125,6 +143,9 @@ const SwapInterface = () => {
     setFromAmount(toAmount);
     setToAmount(fromAmount);
   };
+
+  // Combine common tokens and custom tokens for selection
+  const allTokens = [...COMMON_TOKENS, ...customTokens];
 
   return (
     <div className="max-w-md mx-auto bg-gray-800 rounded-xl shadow-md overflow-hidden p-6">
@@ -138,16 +159,27 @@ const SwapInterface = () => {
             className="bg-gray-700 text-white rounded-lg p-2 flex-grow"
             value={fromToken?.address || ''}
             onChange={(e) => {
-              const selectedToken = COMMON_TOKENS.find(t => t.address === e.target.value) || null;
+              const selectedToken = allTokens.find(t => t.address === e.target.value) || null;
               handleFromTokenSelect(selectedToken);
             }}
           >
             <option value="">Select token</option>
-            {COMMON_TOKENS.map((token) => (
-              <option key={token.address} value={token.address}>
-                {token.symbol}
-              </option>
-            ))}
+            <optgroup label="Common Tokens">
+              {COMMON_TOKENS.map((token) => (
+                <option key={token.address} value={token.address}>
+                  {token.symbol} - {token.name}
+                </option>
+              ))}
+            </optgroup>
+            {customTokens.length > 0 && (
+              <optgroup label="Custom Tokens">
+                {customTokens.map((token) => (
+                  <option key={token.address} value={token.address}>
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <input
             type="number"
@@ -167,9 +199,11 @@ const SwapInterface = () => {
           />
           <button
             onClick={handleAddCustomFromToken}
-            className="bg-gray-600 hover:bg-gray-500 text-white rounded-lg px-3"
+            disabled={isLoadingFromToken}
+            className={`bg-gray-600 hover:bg-gray-500 text-white rounded-lg px-3 flex items-center ${isLoadingFromToken ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            Add
+            {isLoadingFromToken ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            <span className="ml-1">Add</span>
           </button>
         </div>
       </div>
@@ -193,16 +227,27 @@ const SwapInterface = () => {
             className="bg-gray-700 text-white rounded-lg p-2 flex-grow"
             value={toToken?.address || ''}
             onChange={(e) => {
-              const selectedToken = COMMON_TOKENS.find(t => t.address === e.target.value) || null;
+              const selectedToken = allTokens.find(t => t.address === e.target.value) || null;
               handleToTokenSelect(selectedToken);
             }}
           >
             <option value="">Select token</option>
-            {COMMON_TOKENS.map((token) => (
-              <option key={token.address} value={token.address}>
-                {token.symbol}
-              </option>
-            ))}
+            <optgroup label="Common Tokens">
+              {COMMON_TOKENS.map((token) => (
+                <option key={token.address} value={token.address}>
+                  {token.symbol} - {token.name}
+                </option>
+              ))}
+            </optgroup>
+            {customTokens.length > 0 && (
+              <optgroup label="Custom Tokens">
+                {customTokens.map((token) => (
+                  <option key={token.address} value={token.address}>
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <input
             type="text"
@@ -222,9 +267,11 @@ const SwapInterface = () => {
           />
           <button
             onClick={handleAddCustomToToken}
-            className="bg-gray-600 hover:bg-gray-500 text-white rounded-lg px-3"
+            disabled={isLoadingToToken}
+            className={`bg-gray-600 hover:bg-gray-500 text-white rounded-lg px-3 flex items-center ${isLoadingToToken ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            Add
+            {isLoadingToToken ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            <span className="ml-1">Add</span>
           </button>
         </div>
       </div>

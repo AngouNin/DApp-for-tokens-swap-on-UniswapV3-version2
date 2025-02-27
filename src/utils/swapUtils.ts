@@ -24,11 +24,18 @@ export const getTokenQuote = async (
   fromAmount: string
 ): Promise<string> => {
   try {
+    // This is a simplified implementation
+    // In a real application, you would:
+    // 1. Query Uniswap V4 pools for the best route
+    // 2. Calculate the expected output amount
+    
+    // For demonstration purposes, we're simulating a quote
+    // with a simple calculation and random variation
     
     // Convert amount to wei
     const amountIn = ethers.utils.parseUnits(fromAmount, fromToken.decimals);
     
-    // Simulate exchange rate
+    // Simulate exchange rate (this would come from Uniswap in a real implementation)
     let exchangeRate;
     
     // Simplified exchange rate simulation based on token pairs
@@ -77,6 +84,13 @@ export const executeSwap = async (
     // Parse the input amount
     const amountIn = ethers.utils.parseUnits(fromAmount, fromToken.decimals);
     
+    // In a real implementation, you would:
+    // 1. Get the best route from Uniswap
+    // 2. Create a swap transaction
+    // 3. Send the transaction
+    
+    // For demonstration, we'll create a simulated transaction
+    
     // Check if token needs approval
     const tokenContract = new ethers.Contract(
       fromToken.address,
@@ -93,6 +107,8 @@ export const executeSwap = async (
     // Wait for approval transaction to be mined
     await approveTx.wait();
     
+    // Create swap parameters
+    // In a real implementation, you would use the Uniswap SDK to create the swap parameters
     const swapData = ethers.utils.defaultAbiCoder.encode(
       ['address', 'address', 'uint256', 'uint256', 'uint256'],
       [
@@ -122,3 +138,4 @@ export const executeSwap = async (
     throw new Error('Failed to execute swap');
   }
 };
+
