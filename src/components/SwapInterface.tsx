@@ -287,14 +287,18 @@ const SwapInterface = () => {
       {/* Swap Button */}
       <button
         onClick={handleSwap}
-        disabled={!fromToken || !toToken || !fromAmount || parseFloat(fromAmount) <= 0 || isLoading || swapStatus === 'pending'}
+        disabled={!fromToken || !toToken || !fromAmount || parseFloat(fromAmount) <= 0 || isLoading || swapStatus === 'pending' || !address}
         className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center ${
-          !fromToken || !toToken || !fromAmount || parseFloat(fromAmount) <= 0 || isLoading || swapStatus === 'pending'
+          !fromToken || !toToken || !fromAmount || parseFloat(fromAmount) <= 0 || isLoading || swapStatus === 'pending' || !address
             ? 'bg-purple-900/50 text-purple-300 cursor-not-allowed'
             : 'bg-purple-600 hover:bg-purple-700 text-white'
         }`}
       >
-        {swapStatus === 'pending' ? (
+        {
+        !address ? (
+          'Connect Wallet to Swap'
+        ) : 
+        swapStatus === 'pending' ? (
           <>
             <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
             Swapping...
@@ -312,7 +316,7 @@ const SwapInterface = () => {
       </button>
       
       {/* Price Info */}
-      {fromToken && toToken && toAmount && (
+      {fromToken && toToken && toAmount && fromAmount && parseFloat(fromAmount) > 0 && (
         <div className="mt-4 text-sm text-gray-400">
           <p className="flex justify-between">
             <span>Rate:</span>
