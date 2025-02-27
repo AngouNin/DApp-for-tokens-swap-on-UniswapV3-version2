@@ -62,7 +62,6 @@ const SwapInterface = () => {
     try {
       await executeSwap(address, fromToken, toToken, fromAmount);
       setSwapStatus('success');
-      // Reset form after successful swap
       setTimeout(() => {
         setFromAmount('');
         setToAmount('');
@@ -77,7 +76,6 @@ const SwapInterface = () => {
 
   const handleFromTokenSelect = (token: Token | null) => {
     if (token && token.address === toToken?.address) {
-      // Swap positions if same token selected
       setToToken(fromToken);
     }
     setFromToken(token);
@@ -85,7 +83,6 @@ const SwapInterface = () => {
 
   const handleToTokenSelect = (token: Token | null) => {
     if (token && token.address === fromToken?.address) {
-      // Swap positions if same token selected
       setFromToken(toToken);
     }
     setToToken(token);
@@ -184,7 +181,7 @@ const SwapInterface = () => {
           <input
             type="number"
             placeholder="Amount"
-            className="bg-gray-700 text-white rounded-lg p-2 flex-grow"
+            className="bg-gray-700 text-white rounded-lg p-2 flex-grow w-full"
             value={fromAmount}
             onChange={(e) => setFromAmount(e.target.value)}
           />
@@ -252,7 +249,7 @@ const SwapInterface = () => {
           <input
             type="text"
             placeholder="Amount"
-            className="bg-gray-700 text-white rounded-lg p-2 flex-grow"
+            className="bg-gray-700 text-white rounded-lg p-2 flex-grow w-full"
             value={toAmount}
             readOnly
           />
