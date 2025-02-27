@@ -1,12 +1,6 @@
 import { ethers } from 'ethers';
 import { Token } from '../types/tokens';
-
-// ERC20 ABI for token information
-const ERC20_ABI = [
-  'function name() view returns (string)',
-  'function symbol() view returns (string)',
-  'function decimals() view returns (uint8)'
-];
+import { ERC20_ABI } from './abis';
 
 /**
  * Fetches token information from the blockchain

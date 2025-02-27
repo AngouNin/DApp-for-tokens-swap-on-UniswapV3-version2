@@ -15,6 +15,7 @@
     "@uniswap/universal-router-sdk": "^2.0.1",
     "@uniswap/v3-sdk": "^3.24.1",
     "@uniswap/v4-sdk": "^1.20.0",
+    "axios": "^1.8.1",
     "ethers": "^5.7.2",
     "graphql-request": "^7.1.2",
     "lucide-react": "^0.344.0",
