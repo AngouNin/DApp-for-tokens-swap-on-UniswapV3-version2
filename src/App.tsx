@@ -1,4 +1,3 @@
-// import React, { useState, useEffect } from 'react';
 import { createConfig, http, WagmiProvider, useAccount, useConnect, useDisconnect } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { injected } from 'wagmi/connectors';
@@ -6,10 +5,8 @@ import { mainnet } from 'wagmi/chains';
 import { Wallet, ArrowRightLeft, AlertCircle } from 'lucide-react';
 import SwapInterface from './components/SwapInterface';
 
-// Create a client
 const queryClient = new QueryClient();
 
-// Create wagmi config
 const config = createConfig({
   chains: [mainnet],
   transports: {
